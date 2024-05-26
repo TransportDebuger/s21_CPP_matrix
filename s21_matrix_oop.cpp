@@ -1,17 +1,22 @@
 #include "s21_matrix_oop.h"
 
 S21Matrix::S21Matrix(int rows, int cols) {
-    this->cols_ = cols;
-    this->rows_ = rows;
-    this->matrix_ = new double*[this->rows_];
-    for (int i = 0; i < this->rows_; i++) {
-        this->matrix_[i] = new double[this->cols_];
+    if (rows >= MIN_MATRIX_DIM && cols >= MIN_MATRIX_DIM) {
+        this->cols_ = cols;
+        this->rows_ = rows;
+        this->matrix_ = new double*[this->rows_];
+        for (int i = 0; i < this->rows_; i++) {
+            this->matrix_[i] = new double[this->cols_];
+        }
+    } else {
+        throw "Error. The dimention of matrix must be equal or higher 1.";
     }
 };
 
 //Дефолтный конструктор. Вызывает коструктор определенный с параметрами размера матрицы.
 S21Matrix::S21Matrix():  S21Matrix::S21Matrix(MIN_MATRIX_DIM, MIN_MATRIX_DIM) {};
 
+//Конструктор копирования
 S21Matrix::S21Matrix(const S21Matrix& other) {
     this->cols_ = other.cols_;
     this->rows_ = other.rows_;
@@ -19,11 +24,18 @@ S21Matrix::S21Matrix(const S21Matrix& other) {
     for (int i = 0; i < this->rows_; i++) {
         this->matrix_[i] = new double[this->cols_];
     }
-};
+}; 
 
+//Конструктор переноса
 S21Matrix::S21Matrix(S21Matrix&& other) {};
 
-S21Matrix::~S21Matrix() {};
+S21Matrix::~S21Matrix() {
+    for (int i = 0; i < this->rows_; i++) {
+        delete[] this->matrix_[i];
+    }
+    delete[] this->matrix_;
+};
+
 bool S21Matrix::EqMatrix(const S21Matrix& other) {};
 void S21Matrix::SumMatrix(const S21Matrix& other) {};
 void S21Matrix::SubMatrix(const S21Matrix& other) {};
