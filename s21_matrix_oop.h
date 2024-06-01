@@ -1,7 +1,7 @@
 #ifndef S21_MATRIX_OOP
 #define S21_MATRIX_OOP
 
-#define MIN_MATRIX_DIM 1
+#define MIN_MATRIX_DIM 0
 #define DEFAULT_ELEMENT_VAL 0
 
 class S21Matrix {
@@ -10,8 +10,9 @@ class S21Matrix {
   double** matrix_;
 
  public:
-  S21Matrix();                        // default constructor
-  S21Matrix(int rows, int cols);      // Parametrized constructor
+//project functionality
+  S21Matrix();                        // default constructor +
+  S21Matrix(int rows, int cols);      // Parametrized constructor +
   S21Matrix(const S21Matrix& other);  // Copy constructor
   S21Matrix(S21Matrix&& other);       // Move constructor
   ~S21Matrix();
@@ -24,6 +25,14 @@ class S21Matrix {
   S21Matrix CalcComplements();
   double Determinant();
   S21Matrix InverseMatrix();
+
+//accessors
+  int getRows();
+  int getCols();
+//mutators
+  void setRows(int rows);
+  void setCols(int cols);
+
 };
 
 #endif
