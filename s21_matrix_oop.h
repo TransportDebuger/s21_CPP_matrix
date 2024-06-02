@@ -10,12 +10,14 @@ class S21Matrix {
   double** matrix_;
 
  public:
-//project functionality
+  // project functionality
   S21Matrix();                        // default constructor +
   S21Matrix(int rows, int cols);      // Parametrized constructor +
   S21Matrix(const S21Matrix& other);  // Copy constructor
   S21Matrix(S21Matrix&& other);       // Move constructor
   ~S21Matrix();
+  double** createMatrix(const int rows, const int cols);
+  void free();
   bool EqMatrix(const S21Matrix& other);
   void SumMatrix(const S21Matrix& other);
   void SubMatrix(const S21Matrix& other);
@@ -26,13 +28,12 @@ class S21Matrix {
   double Determinant();
   S21Matrix InverseMatrix();
 
-//accessors
+  // accessors
   int getRows();
   int getCols();
-//mutators
+  // mutators
   void setRows(int rows);
   void setCols(int cols);
-
 };
 
 #endif
