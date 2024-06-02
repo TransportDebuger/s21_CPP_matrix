@@ -18,6 +18,7 @@ S21Matrix::S21Matrix(const S21Matrix& other)
     : rows_(other.rows_),
       cols_(other.cols_),
       matrix_(createMatrix(rows_, cols_)) {
+
   for (int i = 0; i < this->rows_; i++) {
     for (int j = 0; j < this->cols_; j++) {
       this->matrix_[i][j] = other.matrix_[i][j];
@@ -26,7 +27,12 @@ S21Matrix::S21Matrix(const S21Matrix& other)
 }
 
 //Конструктор переноса
-S21Matrix::S21Matrix(S21Matrix&& other) {}
+S21Matrix::S21Matrix(S21Matrix&& other) noexcept : rows_(other.rows_), cols_(other.cols_), matrix_(other.matrix_) {
+  other.matrix_ = nullptr;
+  other.setRows(0);
+  other.setCols(0);
+//  delete &other;
+}
 
 //Деструктор
 S21Matrix::~S21Matrix() noexcept { this->free(); }
