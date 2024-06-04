@@ -20,7 +20,7 @@ clangf:
 	rm ./.clang-format
 
 cppcheck:
-	cppcheck --enable=all --force --suppress=missingIncludeSystem --language=c++ ${SOURCE}
+	cppcheck --enable=all --force --suppress=missingIncludeSystem --language=c++ --std=c++17 ${SOURCE}
 
 clean:
 	rm -rf *.gch

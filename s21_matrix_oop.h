@@ -22,28 +22,32 @@ class S21Matrix {
 
  public:
   // project functionality
-  S21Matrix() noexcept;                        // default constructor +
-  S21Matrix(int rows, int cols);      // Parametrized constructor +
-  S21Matrix(const S21Matrix& other);  // Copy constructor +
-  S21Matrix(S21Matrix&& other) noexcept;       // Move constructor +
+  S21Matrix() noexcept;                          // default constructor +
+  S21Matrix(int rows, int cols);                 // Parametrized constructor +
+  S21Matrix(const S21Matrix& other);             // Copy constructor +
+  S21Matrix(S21Matrix&& other) noexcept;         // Move constructor +
   ~S21Matrix();
-  bool EqMatrix(const S21Matrix& other);  // Matrix comparisson function +
+  bool EqMatrix(const S21Matrix& other);         // Matrix comparisson function +
   bool operator==(
-      const S21Matrix& other);  // Overloaded matrix comparisson operator +
-  void SumMatrix(const S21Matrix& other);        //Matrix summarization
-  S21Matrix operator+(const S21Matrix& other);   //Overloaded summarization operator
-  S21Matrix& operator+=(const S21Matrix& other); //Overloaded summarization with define operator
+      const S21Matrix& other);                   // Overloaded matrix comparisson operator +
+  void SumMatrix(const S21Matrix& other);        // Matrix summarization
+  S21Matrix operator+(
+      const S21Matrix& other);                   // Overloaded summarization operator
+  S21Matrix& operator+=(
+      const S21Matrix& other);                   // Overloaded summarization with define operator
   void SubMatrix(const S21Matrix& other);
-  S21Matrix operator-(const S21Matrix& other);
-  S21Matrix& operator-=(const S21Matrix& other);
-  void MulNumber(const double num) noexcept;
-  S21Matrix operator*(const double number);
-  S21Matrix& operator*=(const double num);       
-  void MulMatrix(const double num);
+  S21Matrix operator-(const S21Matrix& other);   // Overloaded matrix substruction operator
+  S21Matrix& operator-=(const S21Matrix& other); // Overloaded matrix substruction operator
+  void MulNumber(const double num) noexcept;     // Matrix multiplicatin by Number
+  S21Matrix operator*(const double number);      // Overloaded mtrx-num multiplication
+  S21Matrix& operator*=(const double num);       // Overloaded mtrx-num multiplication
+  void MulMatrix(const S21Matrix& other);        // Matrix-matrix multiplication function
+  S21Matrix operator*(const S21Matrix& other);   // Overloaded mtrx-mtrx multiplication
+  S21Matrix& operator*=(const S21Matrix& other); // Overloaded mtrx-mtrx multiplication
   S21Matrix Transpose();
-  S21Matrix CalcComplements();
-  double Determinant();
-  S21Matrix InverseMatrix();
+  //S21Matrix CalcComplements();
+  //double Determinant();
+  //S21Matrix InverseMatrix();
 
   // accessors
   int getRows();
