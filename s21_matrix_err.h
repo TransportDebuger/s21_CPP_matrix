@@ -7,7 +7,7 @@
 
 // Matrix size exception messeges
 #define MSG_WRONG_DIMENTION_SIZE \
-  "Dimention size mismatch. The matrix dimentions must be higher or equal 0."
+  "Dimention size mismatch. The matrix dimentions can't be less than 0."
 #define MSG_NEQ_MATRIX_SIZE "Unequal size of matrixes."
 
 #endif
