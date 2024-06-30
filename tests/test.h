@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 
 #include "../s21_matrix_oop.h"
-#include "./classes/test_helper.h"
+//#include "./classes/test_helper.h"
 
 #define EQ_PRECISE 1e-7
 

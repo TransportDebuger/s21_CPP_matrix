@@ -27,7 +27,8 @@ ${STATIC_LIB}: ${SOURCE}
 	ranlib $@ 
 
 ${TEST_EXEC}: ${STATIC_LIB} 
-	@${CXX} ${TEST_LIBS} ${TEST_SOURCE} -l:${STATIC_LIB} -o ${TEST_EXEC}
+	${CXX} ${TEST_SOURCE} -L. -l:${STATIC_LIB} ${TEST_LIBS} -o ${TEST_EXEC}
+	./test
 
 clang:
 	cp ../materials/linters/.clang-format .
@@ -48,8 +49,9 @@ valgrind:
 
 
 clean:
-	rm -rf *.gch
-	rm -rf *.a
+	rm -f *.gch
+	rm -f *.a
+	rm -f ${TEST_EXEC}
 	rm -rf ${OBJECTS}
 
 .PHONY: all build clean cppcheck clangf clang valgrind
