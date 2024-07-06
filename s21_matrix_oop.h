@@ -13,13 +13,15 @@ class S21Matrix {
   int cols_, rows_;
   double** matrix_;
   double** createMatrix(const int rows, const int cols);
-  void free();
+  void freeMatrix();
 
  public:
   S21Matrix() noexcept;
   S21Matrix(int rows, int cols);
   S21Matrix(const S21Matrix& other);      // Copy constructor +
   S21Matrix(S21Matrix&& other) noexcept;  // Move constructor +
+  S21Matrix& operator=(const S21Matrix& other);
+  S21Matrix& operator=(S21Matrix&& other) noexcept;
   ~S21Matrix();
 
   double operator()(int row, int col);

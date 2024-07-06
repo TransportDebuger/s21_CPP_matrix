@@ -2,7 +2,7 @@
 
 // Constructor tests
 
-//Test default constructor
+// Test default constructor
 
 int main(int argc, char *argv[]) {
   //     ::testing::GTEST_FLAG(filter) = "TestMulMatrix.*";

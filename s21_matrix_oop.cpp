@@ -12,18 +12,17 @@ S21Matrix::S21Matrix(int rows, int cols) : cols_(cols), rows_(rows) {
     throw std::length_error(MSG_WRONG_DIMENTION_SIZE);
   else if (this->rows_ > 0 && this->cols_ > 0)
     this->matrix_ = createMatrix(rows, cols);
-  else {  
+  else {
     this->rows_ = 0;
     this->cols_ = 0;
     this->matrix_ = nullptr;
   }
 }
 
-//Конструктор копирования
 S21Matrix::S21Matrix(const S21Matrix& other)
     : cols_(other.cols_),
       rows_(other.rows_),
-      matrix_(createMatrix(rows_, cols_)) {
+      matrix_(createMatrix(other.rows_, other.cols_)) {
   for (int i = 0; i < this->rows_; i++) {
     for (int j = 0; j < this->cols_; j++) {
       this->matrix_[i][j] = other.matrix_[i][j];
@@ -31,27 +30,19 @@ S21Matrix::S21Matrix(const S21Matrix& other)
   }
 }
 
-//Конструктор переноса
 S21Matrix::S21Matrix(S21Matrix&& other) noexcept
     : cols_(other.cols_), rows_(other.rows_), matrix_(other.matrix_) {
   other.matrix_ = nullptr;
   other.setRows(0);
   other.setCols(0);
-  //  delete &other;
 }
 
-//Деструктор
 S21Matrix::~S21Matrix() noexcept {
   if (this->matrix_ != nullptr) {
-    this->free();
+    this->freeMatrix();
   }
 }
 
-double S21Matrix::operator()(int row, int col) {
-  return this->getMatrixElement(row, col); 
-}
-
-//Внутренняя функция для создания матрицы
 double** S21Matrix::createMatrix(const int rows, const int cols) {
   double** pmatrix = nullptr;
   if (rows > MIN_MATRIX_DIM && cols > MIN_MATRIX_DIM) {
@@ -67,18 +58,39 @@ double** S21Matrix::createMatrix(const int rows, const int cols) {
         throw MSG_ALLOCATION_ERROR;
       }
     }
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        pmatrix[i][j] = 0;
+      }
+    }
   }
   return pmatrix;
 }
 
-//внутрення функция удаления матрицы
-void S21Matrix::free() {
+void S21Matrix::freeMatrix() {
   for (int i = 0; i < this->rows_; i++) {
     delete[] this->matrix_[i];
   }
   delete[] this->matrix_;
-  setRows(0);
-  setCols(0);
+}
+
+S21Matrix& S21Matrix::operator=(const S21Matrix& other) {
+  S21Matrix copy{other};
+  *this = std::move(copy);
+  return *this;
+}
+
+S21Matrix& S21Matrix::operator=(S21Matrix&& other) noexcept {
+  if (this != &other) {
+    this->setCols(0);
+    this->setRows(0);
+
+    std::swap(rows_, other.rows_);
+    std::swap(cols_, other.cols_);
+    std::swap(matrix_, other.matrix_);
+  }
+
+  return *this;
 }
 
 bool S21Matrix::EqMatrix(const S21Matrix& other) {
@@ -109,13 +121,11 @@ bool S21Matrix::operator==(const S21Matrix& other) {
 }
 
 void S21Matrix::SumMatrix(const S21Matrix& other) {
-  if (this->getRows() != other.rows_ && this->getCols() != other.cols_) {
+  if (this->rows_ != other.rows_ || this->cols_ != other.cols_) {
     throw MSG_NEQ_MATRIX_SIZE;
-  }
-  if (this->matrix_ == nullptr || other.matrix_ == nullptr) {
+  } else if (this->matrix_ == nullptr || other.matrix_ == nullptr) {
     throw MSG_EMPTY_MATRIX;
-  }
-  if (this->getRows() > 0 && this->getCols() > 0) {
+  } else if (this->getRows() > 0 && this->getCols() > 0) {
     for (int i = 0; i < this->getRows(); i++) {
       for (int j = 0; j < this->getCols(); j++) {
         this->matrix_[i][j] += other.matrix_[i][j];
@@ -136,7 +146,7 @@ S21Matrix& S21Matrix::operator+=(const S21Matrix& other) {
 }
 
 void S21Matrix::SubMatrix(const S21Matrix& other) {
-  if (this->getRows() != other.rows_ && this->getCols() != other.cols_) {
+  if (this->getRows() != other.rows_ || this->getCols() != other.cols_) {
     throw MSG_NEQ_MATRIX_SIZE;
   }
   if (this->matrix_ == nullptr || other.matrix_ == nullptr) {
@@ -182,7 +192,7 @@ S21Matrix& S21Matrix::operator*=(const double num) {
 }
 
 void S21Matrix::MulMatrix(const S21Matrix& other) {
-  if (this->getRows() != other.cols_ || this->getCols() != other.rows_) {
+  if (this->getCols() != other.rows_) {
     throw MSG_NEQ_MATRIX_SIZE;
   }
   const int resRows = this->getRows();
@@ -192,13 +202,13 @@ void S21Matrix::MulMatrix(const S21Matrix& other) {
   for (int row = 0; row < resRows; row++) {
     for (int col = 0; col < resCols; col++) {
       for (int i = 0; i < this->getCols(); i++) {
-        rmatrix[row][col] += this->matrix_[row][i] + other.matrix_[i][col];
+        rmatrix[row][col] += this->matrix_[row][i] * other.matrix_[i][col];
       }
     }
   }
-  this->free();
-  this->setRows(resRows);
-  this->setCols(resCols);
+  this->freeMatrix();
+  this->rows_ = resRows;
+  this->cols_ = resCols;
   this->matrix_ = rmatrix;
 }
 
@@ -216,58 +226,65 @@ S21Matrix& S21Matrix::operator*=(const S21Matrix& other) {
 S21Matrix S21Matrix::Transpose() {
   S21Matrix tmp;
 
-  if (this->matrix_ && this->getRows() >= MIN_MATRIX_DIM &&
-      this->getCols() > MIN_MATRIX_DIM) {
+  if (this->matrix_) {
     tmp.setRows(this->getCols());
     tmp.setCols(this->getRows());
-    tmp.matrix_ = createMatrix(tmp.getRows(), tmp.getCols());
     for (int i = 0; i < this->getRows(); i++) {
       for (int j = 0; j < this->getCols(); j++) {
         tmp.matrix_[j][i] = this->matrix_[i][j];
       }
     }
   } else {
-    throw "Wrong source matrix";
+    throw MSG_EMPTY_MATRIX;
   }
   return tmp;
 }
 
 S21Matrix S21Matrix::CalcComplements() {
-  S21Matrix* tmp{this};
+  if (this->getCols() != this->getRows()) {
+    throw std::length_error(MSG_DEP_DIM_UNEQUAL);
+  }
 
-  if (this->getCols() == this->getRows()) {
-    if (this->getCols() > 1 && this->getRows() > 1) {
-      for (int i = 0; i < this->getRows(); i++) {
-        for (int j = 0; j < this->getCols(); j++) {
-          S21Matrix minor{this->getRows() - 1, this->getCols()};
-          int l = 0;
-          for (int m = 0; m < this->getRows(); m++) {
-            if (i != m) {
-              for (int n = 0; this->getCols(); n++) {
-                if (j != n) {
-                  minor.matrix_[l / minor.getRows()][l % minor.getRows()] =
-                      this->matrix_[m][n];
-                  l++;
-                }
+  if (this->matrix_ == nullptr) {
+    throw MSG_EMPTY_MATRIX;
+  }
+
+  S21Matrix result{this->getRows(), this->getCols()};
+
+  if (this->getCols() == 1) {
+    result.setMatrixElement(0, 0, 1.0);
+  } else {
+    for (int i = 0; i < this->getRows(); i++) {
+      for (int j = 0; j < this->getCols(); j++) {
+        S21Matrix minor{this->getRows() - 1, this->getCols() - 1};
+        int step = 0;
+        for (int m = 0; m < this->getRows(); m++) {
+          if (i != m) {
+            for (int n = 0; n < this->getCols(); n++) {
+              if (j != n) {
+                minor.setMatrixElement(step / minor.getRows(),
+                                       step % minor.getRows(),
+                                       this->getMatrixElement(m, n));
+                step++;
               }
             }
           }
-          tmp->matrix_[i][j] = pow(-1.0, i + j) * minor.Determinant();
         }
+
+        result.setMatrixElement(i, j, (pow(-1.0, i + j) * minor.Determinant()));
       }
     }
   }
-
-  return *tmp;
+  return result;
 }
 
 double S21Matrix::Determinant() {
   double determinant = 0.0;
   if (this->matrix_ == nullptr) {
-    throw "Matrix values are not defined";
+    throw MSG_EMPTY_MATRIX;
   }
   if (this->getCols() != this->getRows()) {
-    throw "Matrix is not square";
+    throw MSG_NOT_SQUARE_OPERANDS;
   }
   if (this->getRows() == 1) {
     determinant = this->matrix_[0][0];
@@ -277,12 +294,11 @@ double S21Matrix::Determinant() {
   } else {
     for (int i = 0; i < this->getCols(); i++) {
       S21Matrix minor{this->getRows() - 1, this->getCols() - 1};
-      minor.createMatrix(minor.getRows(), minor.getCols());
       for (int m = 1; m < this->getRows(); m++) {
-        double col_minor = 0;
+        int col_minor = 0;
         for (int n = 0; n < this->getCols(); n++) {
           if (n != i) {
-            minor.matrix_[m - 1][n] = this->matrix_[m][n];
+            minor.setMatrixElement(m - 1, col_minor, this->matrix_[m][n]);
             col_minor++;
           }
         }
@@ -295,20 +311,20 @@ double S21Matrix::Determinant() {
 };
 
 S21Matrix S21Matrix::InverseMatrix() {
-  S21Matrix result{this->CalcComplements()};
-  if (this->matrix_ == nullptr && this->getCols() <= 0 &&
-      this->getRows() <= 0) {
-    throw "Incorrect matrix";
+  if (this->matrix_ == nullptr) {
+    throw MSG_EMPTY_MATRIX;
   }
   if (this->getCols() != this->getRows()) {
-    throw "Matrix is not square";
+    throw MSG_NOT_SQUARE_OPERANDS;
   }
   double determinant = this->Determinant();
+  S21Matrix result;
   if (determinant != 0) {
-    result.Transpose();
-    result *= determinant;
+    result = this->Transpose();
+    result = result.CalcComplements();
+    result *= (1 / determinant);
   } else {
-    throw "Calculation error";
+    throw MSG_CALC_ERROR;
   }
   return result;
 };
@@ -320,15 +336,69 @@ double S21Matrix::getMatrixElement(int row, int col) {
   if (this->matrix_ == nullptr) {
     throw MSG_EMPTY_MATRIX;
   }
-  if (row < 0 || row > this->getRows() - 1 || col < 0 ||
-      col > this->getCols() - 1) {
-    throw "Wrong element";
+  if (row < 0 || row >= this->getRows() || col < 0 || col >= this->getCols()) {
+    throw MSG_ELEM_ACCCESS_ERR;
   }
   return this->matrix_[row][col];
 }
 
-void S21Matrix::setRows(int rows) { this->rows_ = rows; };
-void S21Matrix::setCols(int cols) { this->cols_ = cols; };
+double S21Matrix::operator()(int row, int col) {
+  return this->getMatrixElement(row, col);
+}
+
+void S21Matrix::setRows(int rows) {
+  if (rows < 0) {
+    throw MSG_WRONG_DIMENTION_SIZE;
+  }
+
+  double** tmp = nullptr;
+  int cols = this->getCols();
+  if (this->getCols() > 0 && rows > 0) {
+    tmp = createMatrix(rows, cols);
+  }
+
+  if (tmp && this->matrix_) {
+    int minRows = rows < this->getRows() ? rows : this->getRows();
+    for (int i = 0; i < minRows; i++) {
+      for (int j = 0; j < this->getCols(); j++) {
+        tmp[i][j] = this->matrix_[i][j];
+      }
+    }
+  }
+
+  if (this->matrix_) {
+    this->freeMatrix();
+  }
+  this->matrix_ = tmp;
+  this->rows_ = rows;
+};
+
+void S21Matrix::setCols(int cols) {
+  if (cols < 0) {
+    throw MSG_WRONG_DIMENTION_SIZE;
+  }
+
+  double** tmp = nullptr;
+  int rows = this->getRows();
+  if (cols > 0 && this->getRows() > 0) {
+    tmp = createMatrix(rows, cols);
+  }
+
+  if (tmp && this->matrix_) {
+    int minCols = cols < this->getCols() ? cols : this->getCols();
+    for (int i = 0; i < this->getRows(); i++) {
+      for (int j = 0; j < minCols; j++) {
+        tmp[i][j] = this->matrix_[i][j];
+      }
+    }
+  }
+
+  if (this->matrix_) {
+    this->freeMatrix();
+  }
+  this->matrix_ = tmp;
+  this->cols_ = cols;
+};
 
 void S21Matrix::setMatrixElement(int row, int col, double value) {
   if (this->matrix_ == nullptr) {
@@ -336,7 +406,7 @@ void S21Matrix::setMatrixElement(int row, int col, double value) {
   }
   if (row < 0 || row > this->getRows() - 1 || col < 0 ||
       col > this->getCols() - 1) {
-    throw "Wrong element";
+    throw MSG_ELEM_ACCCESS_ERR;
   }
   this->matrix_[row][col] = value;
 }
