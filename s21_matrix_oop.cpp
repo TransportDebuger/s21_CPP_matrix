@@ -1,8 +1,5 @@
 #include "s21_matrix_oop.h"
 
-#include <cmath>
-#include <stdexcept>
-
 #include "s21_matrix_err.h"
 
 S21Matrix::S21Matrix() noexcept : cols_(0), rows_(0), matrix_(nullptr) {}

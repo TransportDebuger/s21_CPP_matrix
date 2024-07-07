@@ -1,6 +1,11 @@
 #ifndef S21_MATRIX_OOP_H
 #define S21_MATRIX_OOP_H
 
+#include <cmath>
+#include <new>
+#include <stdexcept>
+#include <utility>
+
 #define MIN_MATRIX_DIM 0
 
 #define EQ_PRECISE 1e-7
@@ -22,7 +27,7 @@ class S21Matrix {
   S21Matrix(S21Matrix&& other) noexcept;  // Move constructor +
   S21Matrix& operator=(const S21Matrix& other);
   S21Matrix& operator=(S21Matrix&& other) noexcept;
-  ~S21Matrix();
+  ~S21Matrix() noexcept;
 
   double operator()(int row, int col);
   bool EqMatrix(const S21Matrix& other);  // Matrix comparisson function +

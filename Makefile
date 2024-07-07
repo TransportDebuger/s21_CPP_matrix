@@ -29,7 +29,7 @@ UNAME_S := $(shell uname -s)
 vpath %.cpp ${TEST_MODULES_DIR}
 vpath %.o ${OBJ_DIR}
 
-all: clean clang ${TEST_EXEC} valgrind ${GCOV_EXEC}
+all: clean clang ${TEST_EXEC} ${GCOV_EXEC}
 
 build: ${STATIC_LIB}
 
@@ -42,7 +42,9 @@ ${STATIC_LIB_GCOV}: ${GCOV_OBJ_DIR} ${GCOV_OBJECTS}
 	@ranlib $@ 
 
 ${TEST_EXEC}: ${OBJ_DIR} ${TEST_OBJ_DIR} ${STATIC_LIB} ${TEST_OBJECTS}
-	${CXX} ${TEST_OBJECTS} ${STATIC_LIB} ${TEST_LIBS} -o ${TEST_EXEC}
+	@${CXX} ${TEST_OBJECTS} ${STATIC_LIB} ${TEST_LIBS} -o ${TEST_EXEC}
+	./${TEST_EXEC}
+
 
 ${GCOV_EXEC}: ${OBJ_DIR} $(GCOV_OBJ_DIR) $(TEST_OBJ_DIR) ${REPORT_DIR} ${TEST_OBJECTS} ${STATIC_LIB_GCOV}
 	@${CXX} ${TEST_OBJECTS} ${STATIC_LIB_GCOV} ${GCOV_LIBS} -o ${GCOV_EXEC}
