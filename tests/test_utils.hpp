@@ -100,11 +100,10 @@ MatrixType ZeroMatrix(typename MatrixType::size_type rows,
  */
 template <typename T>
 T RandomValue(T min, T max) {
-  // Используем простую линейную интерполяцию
-  // В реальных тестах можно использовать std::uniform_real_distribution
-  static T last_value = min;
-  last_value = min + (max - min) * static_cast<T>(0.5);
-  return last_value;
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_real_distribution<T> dis(min, max);
+    return dis(gen);
 }
 
 }  // namespace s21_test_utils

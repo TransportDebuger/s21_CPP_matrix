@@ -12,13 +12,6 @@
 
 #include <gtest/gtest.h>
 
-// Подключение всех модулей тестов
-#include "test_matrix_core.cpp"
-#include "test_matrix_arithmetic.cpp"
-#include "test_matrix_linalg.cpp"
-#include "test_exception_safety.cpp"
-#include "test_edge_cases.cpp"
-
 /**
  * @brief Основная функция, запускающая все тесты Google Test.
  *
@@ -27,6 +20,6 @@
  * @return int Код возврата (0 - все тесты пройдены, ненулевой - есть сбои).
  */
 int main(int argc, char** argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

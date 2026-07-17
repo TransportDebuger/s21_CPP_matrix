@@ -11,6 +11,8 @@
 
 using namespace s21;
 
+template <typename T>
+class MatrixArithmeticTest : public ::testing::Test {};
 using TestTypes = ::testing::Types<float, double, long double>;
 TYPED_TEST_SUITE(MatrixArithmeticTest, TestTypes);
 
@@ -309,4 +311,21 @@ TYPED_TEST(MatrixArithmeticTest, EdgeCases_PaddingMatrixOperations) {
   m(0, 0) = TypeParam(100);
   MatrixType result = m * TypeParam(0);
   EXPECT_EQ(result(0, 0), TypeParam(0));
+}
+
+//тест цепочки операций
+TYPED_TEST(MatrixArithmeticTest, ChainedOperations) {
+    using MatrixType = Matrix<TypeParam>;
+    MatrixType a(2, 2);
+    a(0, 0) = TypeParam(1);
+    a(1, 1) = TypeParam(2);
+    
+    MatrixType b(2, 2);
+    b(0, 0) = TypeParam(3);
+    b(1, 1) = TypeParam(4);
+    
+    // Цепочка операций
+    MatrixType result = (a + b) * TypeParam(2) - a;
+    EXPECT_EQ(result.rows(), 2u);
+    EXPECT_EQ(result.cols(), 2u);
 }

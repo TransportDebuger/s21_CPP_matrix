@@ -52,7 +52,7 @@ Matrix<T>::Matrix(std::initializer_list<value_type> values) {
     }
 
     if (!is_perfect_square) {
-        throw std::invalid_argument("Размер списка инициализации должен быть полным квадратом");
+        throw std::invalid_argument("Size of initializer_list must be square");
     }
 
     rows_ = dim;
@@ -180,9 +180,9 @@ Matrix<T>& Matrix<T>::operator+=(const Matrix& other) {
 
 template <std::floating_point T>
 Matrix<T> Matrix<T>::operator+(const Matrix& other) const {
-  Matrix result(rows_, cols_);
-  result += other;  // использует operator+=
-  return result;
+  Matrix result(*this); 
+  result += other;      
+  return result;        
 }
 
 template <std::floating_point T>
@@ -288,7 +288,7 @@ Matrix<T> Matrix<T>::calc_complements() const {
   
   // 2. Базовый случай для матрицы 1x1: алгебраическое дополнение равно 1
   if (rows_ == 1) {
-    Matrix result{1, 1};
+    Matrix result(1, 1);
     result(0, 0) = static_cast<value_type>(1.0);
     return result;
   }
@@ -419,7 +419,7 @@ Matrix<T> Matrix<T>::inverse() const {
   value_type det = determinant();
 
   if (std::isnan(det) || std::isinf(det)) {
-        throw std::logic_error("matrix determinant has invalid value (NaN or Inf)");
+        throw std::logic_error("Matrix determinant has invalid value (NaN or Inf)");
   }
   // 3. Проверка матрицы на вырожденность (сингулярность).
   // Прямое сравнение det == 0 для чисел с плавающей точкой некорректно.
@@ -447,7 +447,6 @@ Matrix<T> Matrix<T>::inverse() const {
 
 template <std::floating_point T>
 void Matrix<T>::allocate(size_type rows, size_type cols) {
-  // Обработка случая пустой матрицы
   if (rows == 0 || cols == 0) {
     rows_ = 0;
     cols_ = 0;
@@ -455,18 +454,12 @@ void Matrix<T>::allocate(size_type rows, size_type cols) {
     return;
   }
 
-  // Строгая проверка на арифметическое переполнение при вычислении total_size
   if (rows > std::numeric_limits<size_type>::max() / cols) {
     throw std::length_error("Matrix dimensions cause size overflow");
   }
 
   size_type total_size = rows * cols;
 
-  // Выделение непрерывного блока памяти.
-  // Синтаксис new T[N]() гарантирует value-initialization, 
-  // что для фундаментальных типов (float, double) означает обнуление (0.0).
-  // Это заменяет неэффективный ручной цикл инициализации из старой версии.
-  // В случае неудачи оператор new автоматически выбросит std::bad_alloc.
   data_ = new value_type[total_size]();
   
   rows_ = rows;
@@ -475,11 +468,8 @@ void Matrix<T>::allocate(size_type rows, size_type cols) {
 
 template <std::floating_point T>
 void Matrix<T>::deallocate() noexcept {
-  // Оператор delete[] безопасно обрабатывает nullptr, 
-  // поэтому дополнительная проверка не требуется.
   delete[] data_;
   
-  // Приведение объекта в валидное состояние "пустой матрицы"
   data_ = nullptr;
   rows_ = 0;
   cols_ = 0;

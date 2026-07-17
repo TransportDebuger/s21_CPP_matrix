@@ -12,6 +12,8 @@
 
 using namespace s21;
 
+template <typename T>
+class MatrixLinearAlgebraTest : public ::testing::Test {};
 using TestTypes = ::testing::Types<float, double, long double>;
 TYPED_TEST_SUITE(MatrixLinearAlgebraTest, TestTypes);
 
@@ -200,16 +202,16 @@ TYPED_TEST(MatrixLinearAlgebraTest, Determinant_SingleElement) {
 }
 
 TYPED_TEST(MatrixLinearAlgebraTest, Determinant_2x2) {
-  using MatrixType = Matrix<TypeParam>;
-  
-  MatrixType m(2, 2);
-  m(0, 0) = TypeParam(1);
-  m(0, 1) = TypeParam(2);
-  m(1, 0) = TypeParam(3);
-  m(1, 1) = TypeParam(4);
-  
-  // det = 1*4 - 2*3 = -2
-  EXPECT_EQ(m.determinant(), TypeParam(-2));
+    using MatrixType = Matrix<TypeParam>;
+    MatrixType m(2, 2);
+    m(0, 0) = TypeParam(1);
+    m(0, 1) = TypeParam(2);
+    m(1, 0) = TypeParam(3);
+    m(1, 1) = TypeParam(4);
+    
+    // det = 1*4 - 2*3 = -2
+    // Используем EXPECT_NEAR для учета погрешности FPU
+    EXPECT_NEAR(m.determinant(), TypeParam(-2), MatrixType::kEpsilon);
 }
 
 TYPED_TEST(MatrixLinearAlgebraTest, Determinant_3x3) {
@@ -271,7 +273,7 @@ TYPED_TEST(MatrixLinearAlgebraTest, Determinant_NonSquare_Throws) {
   
   MatrixType m(2, 3);
   
-  EXPECT_THROW(m.determinant(), std::invalid_argument);
+  EXPECT_THROW((void)m.determinant(), std::invalid_argument);
 }
 
 TYPED_TEST(MatrixLinearAlgebraTest, Determinant_Empty_Throws) {
@@ -279,12 +281,24 @@ TYPED_TEST(MatrixLinearAlgebraTest, Determinant_Empty_Throws) {
   
   MatrixType m;
   
-  EXPECT_THROW(m.determinant(), std::invalid_argument);
+  EXPECT_THROW((void)m.determinant(), std::invalid_argument);
 }
 
 // ============================================================================
 // calc_complements() - матрица алгебраических дополнений
 // ============================================================================
+TYPED_TEST(MatrixLinearAlgebraTest, CalcComplements_1x1) {
+    using MatrixType = Matrix<TypeParam>;
+    MatrixType m(1, 1);
+    m(0, 0) = TypeParam(42); // Значение не имеет значения для дополнения 1x1
+    
+    MatrixType result = m.calc_complements();
+    
+    EXPECT_EQ(result.rows(), 1u);
+    EXPECT_EQ(result.cols(), 1u);
+    EXPECT_EQ(result(0, 0), TypeParam(1)); // Алгебраическое дополнение 1x1 всегда равно 1
+}
+
 TYPED_TEST(MatrixLinearAlgebraTest, CalcComplements_2x2) {
   using MatrixType = Matrix<TypeParam>;
   
@@ -337,7 +351,7 @@ TYPED_TEST(MatrixLinearAlgebraTest, CalcComplements_NonSquare_Throws) {
   
   MatrixType m(2, 3);
   
-  EXPECT_THROW(m.calc_complements(), std::invalid_argument);
+  EXPECT_THROW((void)m.calc_complements(), std::invalid_argument);
 }
 
 TYPED_TEST(MatrixLinearAlgebraTest, CalcComplements_Empty_Throws) {
@@ -345,7 +359,26 @@ TYPED_TEST(MatrixLinearAlgebraTest, CalcComplements_Empty_Throws) {
   
   MatrixType m;
   
-  EXPECT_THROW(m.calc_complements(), std::invalid_argument);
+  EXPECT_THROW((void)m.calc_complements(), std::invalid_argument);
+}
+
+TYPED_TEST(MatrixLinearAlgebraTest, CalcComplements_SingularMatrix) {
+    using MatrixType = Matrix<TypeParam>;
+    MatrixType m(3, 3);
+    m(0, 0) = TypeParam(1);
+    m(0, 1) = TypeParam(2);
+    m(0, 2) = TypeParam(3);
+    m(1, 0) = TypeParam(2);
+    m(1, 1) = TypeParam(4);
+    m(1, 2) = TypeParam(6);
+    m(2, 0) = TypeParam(3);
+    m(2, 1) = TypeParam(6);
+    m(2, 2) = TypeParam(9);
+    
+    // Матрица алгебраических дополнений должна вычислиться
+    MatrixType complements = m.calc_complements();
+    EXPECT_EQ(complements.rows(), 3u);
+    EXPECT_EQ(complements.cols(), 3u);
 }
 
 // ============================================================================
@@ -410,7 +443,7 @@ TYPED_TEST(MatrixLinearAlgebraTest, Inverse_SingularMatrix_Throws) {
   m(2, 1) = TypeParam(8);
   m(2, 2) = TypeParam(9);
   
-  EXPECT_THROW(m.inverse(), std::logic_error);
+  EXPECT_THROW((void)m.inverse(), std::logic_error);
 }
 
 TYPED_TEST(MatrixLinearAlgebraTest, Inverse_NonSquare_Throws) {
@@ -418,7 +451,7 @@ TYPED_TEST(MatrixLinearAlgebraTest, Inverse_NonSquare_Throws) {
   
   MatrixType m(2, 3);
   
-  EXPECT_THROW(m.inverse(), std::invalid_argument);
+  EXPECT_THROW((void)m.inverse(), std::invalid_argument);
 }
 
 TYPED_TEST(MatrixLinearAlgebraTest, Inverse_Empty_Throws) {
@@ -426,7 +459,7 @@ TYPED_TEST(MatrixLinearAlgebraTest, Inverse_Empty_Throws) {
   
   MatrixType m;
   
-  EXPECT_THROW(m.inverse(), std::invalid_argument);
+  EXPECT_THROW((void)m.inverse(), std::invalid_argument);
 }
 
 // ============================================================================
@@ -502,7 +535,7 @@ TYPED_TEST(MatrixLinearAlgebraTest, EdgeCases_IdentityMatrixDeterminant) {
   using MatrixType = Matrix<TypeParam>;
   
   MatrixType identity(5, 5);
-  for (size_type i = 0; i < 5; ++i) {
+  for (std::size_t i = 0; i < 5; ++i) {
     identity(i, i) = TypeParam(1);
   }
   
