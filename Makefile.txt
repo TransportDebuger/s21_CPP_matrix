@@ -79,7 +79,7 @@ GENHTML := genhtml
 LINTERS = $(CLFORMAT) $(CPPCHECK)
 MEMCHECK = $(VALGRIND)
 COVERAGE = $(LCOV)
-UNITTEST = libgtest-dev
+UNITTEST = gtest
 DOCGEN = doxygen graphviz
 
 # --------------------------------------
@@ -266,7 +266,7 @@ unit-test-build: check-dep-unit $(COVERAGE_LIB)
 	@if [ -z "$(TESTSOURCES)" ]; then \
 		$(call print-error, Test sources not found); exit 1; \
 	fi
-	$(CXX) $(COVERAGE_CXXFLAGS) -I$(INCLUDEDIR) -I$(TESTSRCDIR) -L$(BUILDDIR) \
+	$(CXX) $(COVERAGE_CXXFLAGS) -I$(SRCDIR) -L$(BUILDDIR) \
 		$(TESTSOURCES) $(TESTLIBS) -l$(PROJECTNAME)_cov -o $(TESTBUILDDIR)/$(TESTEXEC)
 	@$(call print-success, $(TESTEXEC) built at $(TESTBUILDDIR))
 

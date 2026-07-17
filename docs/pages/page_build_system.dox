@@ -1,0 +1,437 @@
+/**
+ * @page page_build_system S21 Matrix+: Системы сборки и CI/CD
+ * 
+ * @section build_overview Общие положения
+ * Библиотека s21::Matrix<T> поддерживает две системы сборки: GNU Make и CMake. 
+ * Обе системы предоставляют идентичный набор целей (targets) для сборки библиотеки, 
+ * тестирования, генерации документации и анализа кода. Выбор системы сборки 
+ * определяется предпочтениями разработчика и требованиями проекта.
+ * 
+ * @section build_make GNU Make
+ * 
+ * @subsection make_overview Обзор
+ * Makefile предоставляет классический подход к сборке с явным описанием зависимостей 
+ * и правил. Все команды выполняются непосредственно в терминале.
+ * 
+ * @subsection make_commands Полный справочник команд Make
+ * 
+ * @par make (или make build)
+ * Сборка библиотеки по умолчанию (тип определяется переменной LIBTYPE).
+ * @code{.bash}
+ * make                          # Статическая библиотека (по умолчанию)
+ * make LIBTYPE=dynamic          # Динамическая библиотека (.so)
+ * make LIBTYPE=all              # Обе библиотеки (.a и .so)
+ * @endcode
+ * 
+ * @par make install
+ * Установка заголовочных файлов и библиотек в директорию INSTALLDIR.
+ * @code{.bash}
+ * make install                  # Установка в /usr/local (по умолчанию)
+ * make install INSTALLDIR=./my_install  # Установка в пользовательскую директорию
+ * @endcode
+ * @note Защита от установки в директорию сборки (BUILDDIR) реализована на уровне Makefile.
+ * 
+ * @par make uninstall
+ * Удаление установленных файлов из INSTALLDIR.
+ * @code{.bash}
+ * make uninstall
+ * make uninstall INSTALLDIR=./my_install
+ * @endcode
+ * 
+ * @par make test
+ * Запуск полного цикла тестирования: линтеры, юнит-тесты, проверка памяти, отчет о покрытии.
+ * @code{.bash}
+ * make test
+ * @endcode
+ * @note Эквивалентно последовательному выполнению: linter-test, unit-test, mem-test, gcov-report.
+ * 
+ * @par make linter-test
+ * Проверка стиля кода (clang-format) и статический анализ (cppcheck).
+ * @code{.bash}
+ * make linter-test
+ * @endcode
+ * 
+ * @par make unit-test
+ * Сборка и запуск юнит-тестов с использованием Google Test.
+ * @code{.bash}
+ * make unit-test
+ * @endcode
+ * 
+ * @par make mem-test
+ * Проверка утечек памяти и некорректного обращения с памятью через Valgrind.
+ * @code{.bash}
+ * make mem-test
+ * @endcode
+ * 
+ * @par make gcov-report
+ * Генерация HTML-отчета о покрытии кода тестами с использованием lcov и genhtml.
+ * @code{.bash}
+ * make gcov-report
+ * @endcode
+ * @note Отчет генерируется в директории tests/coverage/report/.
+ * 
+ * @par make dvi
+ * Генерация HTML-документации API с использованием Doxygen.
+ * @code{.bash}
+ * make dvi
+ * @endcode
+ * @note Документация генерируется в директории docbuild/.
+ * 
+ * @par make clean
+ * Удаление всех сгенерированных файлов (объектные файлы, отчеты, документация).
+ * @code{.bash}
+ * make clean
+ * @endcode
+ * 
+ * @par make help
+ * Вывод справочной информации о доступных целях.
+ * @code{.bash}
+ * make help
+ * @endcode
+ * 
+ * @section build_cmake CMake
+ * 
+ * @subsection cmake_overview Обзор
+ * CMake предоставляет кроссплатформенный подход к сборке с двухэтапным процессом: 
+ * конфигурация и сборка. CMakeLists.txt генерирует файлы сборки для выбранной 
+ * системы (Make, Ninja, Visual Studio и др.).
+ * 
+ * @subsection cmake_configuration Конфигурация проекта
+ * Перед сборкой необходимо выполнить конфигурацию проекта:
+ * @code{.bash}
+ * # Создание директории сборки и конфигурация
+ * cmake -B build
+ * 
+ * # Конфигурация с параметрами
+ * cmake -B build -DLIBTYPE=dynamic -DCMAKE_INSTALL_PREFIX=./install -DENABLE_COVERAGE=OFF
+ * @endcode
+ * 
+ * @par Доступные опции конфигурации:
+ * @li @b LIBTYPE: Тип библиотеки (static, dynamic, all). По умолчанию: static.
+ * @li @b CMAKE_INSTALL_PREFIX: Директория установки. По умолчанию: /usr/local.
+ * @li @b ENABLE_COVERAGE: Включение флагов покрытия (--coverage). По умолчанию: ON.
+ * 
+ * @subsection cmake_commands Полный справочник команд CMake
+ * 
+ * @par cmake --build build
+ * Сборка библиотеки (аналог make build).
+ * @code{.bash}
+ * cmake --build build
+ * @endcode
+ * 
+ * @par cmake --install build
+ * Установка заголовочных файлов и библиотек.
+ * @code{.bash}
+ * cmake --install build
+ * cmake --install build --prefix ./my_install
+ * @endcode
+ * 
+ * @par cmake --build build --target uninstall
+ * Удаление установленных файлов.
+ * @code{.bash}
+ * cmake --build build --target uninstall
+ * @endcode
+ * 
+ * @par cmake --build build --target test-all
+ * Запуск полного цикла тестирования (аналог make test).
+ * @code{.bash}
+ * cmake --build build --target test-all
+ * @endcode
+ * @note Цель test-all объединяет linter-test, unit-test, mem-test, gcov-report.
+ * 
+ * @par cmake --build build --target linter-test
+ * Проверка стиля кода и статический анализ.
+ * @code{.bash}
+ * cmake --build build --target linter-test
+ * @endcode
+ * 
+ * @par cmake --build build --target unit-test
+ * Сборка и запуск юнит-тестов.
+ * @code{.bash}
+ * cmake --build build --target unit-test
+ * @endcode
+ * 
+ * @par cmake --build build --target mem-test
+ * Проверка памяти через Valgrind.
+ * @code{.bash}
+ * cmake --build build --target mem-test
+ * @endcode
+ * 
+ * @par cmake --build build --target gcov-report
+ * Генерация отчета о покрытии.
+ * @code{.bash}
+ * cmake --build build --target gcov-report
+ * @endcode
+ * 
+ * @par cmake --build build --target dvi
+ * Генерация документации.
+ * @code{.bash}
+ * cmake --build build --target dvi
+ * @endcode
+ * 
+ * @par cmake --build build --target clean
+ * Удаление сгенерированных файлов.
+ * @code{.bash}
+ * cmake --build build --target clean
+ * @endcode
+ * 
+ * @par cmake --build build --target usage
+ * Вывод справочной информации.
+ * @code{.bash}
+ * cmake --build build --target usage
+ * @endcode
+ * 
+ * @section build_ci Интеграция с CI/CD
+ * 
+ * @subsection ci_github GitHub Actions
+ * 
+ * @par Пример конфигурации .github/workflows/build.yml:
+ * @code{.yaml}
+ * name: Build and Test
+ * 
+ * on:
+ *   push:
+ *     branches: [ main, develop ]
+ *   pull_request:
+ *     branches: [ main ]
+ * 
+ * jobs:
+ *   build-and-test:
+ *     runs-on: ubuntu-latest
+ *     
+ *     steps:
+ *     - uses: actions/checkout@v3
+ *     
+ *     - name: Install dependencies
+ *       run: |
+ *         sudo apt-get update
+ *         sudo apt-get install -y \
+ *           g++ \
+ *           cmake \
+ *           make \
+ *           libgtest-dev \
+ *           clang-format \
+ *           cppcheck \
+ *           valgrind \
+ *           lcov \
+ *           doxygen \
+ *           graphviz
+ *     
+ *     - name: Build with Make
+ *       run: |
+ *         make build LIBTYPE=all
+ *     
+ *     - name: Run linter tests
+ *       run: make linter-test
+ *     
+ *     - name: Run unit tests
+ *       run: make unit-test
+ *     
+ *     - name: Run memory tests
+ *       run: make mem-test
+ *     
+ *     - name: Generate coverage report
+ *       run: make gcov-report
+ *     
+ *     - name: Generate documentation
+ *       run: make dvi
+ *     
+ *     - name: Upload coverage artifact
+ *       uses: actions/upload-artifact@v3
+ *       with:
+ *         name: coverage-report
+ *         path: tests/coverage/report/
+ *     
+ *     - name: Upload documentation artifact
+ *       uses: actions/upload-artifact@v3
+ *       with:
+ *         name: documentation
+ *         path: docbuild/
+ * @endcode
+ * 
+ * @par Альтернативная конфигурация с CMake:
+ * @code{.yaml}
+ * name: Build and Test (CMake)
+ * 
+ * on:
+ *   push:
+ *     branches: [ main, develop ]
+ *   pull_request:
+ *     branches: [ main ]
+ * 
+ * jobs:
+ *   build-and-test:
+ *     runs-on: ubuntu-latest
+ *     
+ *     steps:
+ *     - uses: actions/checkout@v3
+ *     
+ *     - name: Install dependencies
+ *       run: |
+ *         sudo apt-get update
+ *         sudo apt-get install -y \
+ *           g++ \
+ *           cmake \
+ *           libgtest-dev \
+ *           clang-format \
+ *           cppcheck \
+ *           valgrind \
+ *           lcov \
+ *           doxygen \
+ *           graphviz
+ *     
+ *     - name: Configure CMake
+ *       run: cmake -B build -DLIBTYPE=all -DENABLE_COVERAGE=ON
+ *     
+ *     - name: Build
+ *       run: cmake --build build
+ *     
+ *     - name: Run all tests
+ *       run: cmake --build build --target test-all
+ *     
+ *     - name: Generate documentation
+ *       run: cmake --build build --target dvi
+ *     
+ *     - name: Upload artifacts
+ *       uses: actions/upload-artifact@v3
+ *       with:
+ *         name: build-artifacts
+ *         path: |
+ *           build/coverage/report/
+ *           build/docbuild/
+ * @endcode
+ * 
+ * @subsection ci_gitlab GitLab CI
+ * 
+ * @par Пример конфигурации .gitlab-ci.yml:
+ * @code{.yaml}
+ * stages:
+ *   - build
+ *   - test
+ *   - documentation
+ * 
+ * variables:
+ *   CMAKE_BUILD_DIR: build
+ * 
+ * before_script:
+ *   - apt-get update -qq
+ *   - apt-get install -y -qq g++ cmake make libgtest-dev clang-format cppcheck valgrind lcov doxygen graphviz
+ * 
+ * build:
+ *   stage: build
+ *   script:
+ *     - make build LIBTYPE=all
+ *   artifacts:
+ *     paths:
+ *       - build/
+ *     expire_in: 1 hour
+ * 
+ * linter-test:
+ *   stage: test
+ *   script:
+ *     - make linter-test
+ *   dependencies:
+ *     - build
+ * 
+ * unit-test:
+ *   stage: test
+ *   script:
+ *     - make unit-test
+ *   dependencies:
+ *     - build
+ * 
+ * mem-test:
+ *   stage: test
+ *   script:
+ *     - make mem-test
+ *   dependencies:
+ *     - build
+ * 
+ * coverage:
+ *   stage: test
+ *   script:
+ *     - make gcov-report
+ *   artifacts:
+ *     paths:
+ *       - tests/coverage/report/
+ *     expire_in: 1 week
+ *   dependencies:
+ *     - build
+ * 
+ * documentation:
+ *   stage: documentation
+ *   script:
+ *     - make dvi
+ *   artifacts:
+ *     paths:
+ *       - docbuild/
+ *     expire_in: 1 week
+ *   dependencies:
+ *     - build
+ * @endcode
+ * 
+ * @par Альтернативная конфигурация с CMake:
+ * @code{.yaml}
+ * stages:
+ *   - configure
+ *   - build
+ *   - test
+ *   - documentation
+ * 
+ * variables:
+ *   CMAKE_BUILD_DIR: build
+ * 
+ * before_script:
+ *   - apt-get update -qq
+ *   - apt-get install -y -qq g++ cmake libgtest-dev clang-format cppcheck valgrind lcov doxygen graphviz
+ * 
+ * configure:
+ *   stage: configure
+ *   script:
+ *     - cmake -B $CMAKE_BUILD_DIR -DLIBTYPE=all -DENABLE_COVERAGE=ON
+ *   artifacts:
+ *     paths:
+ *       - $CMAKE_BUILD_DIR/
+ *     expire_in: 1 hour
+ * 
+ * build:
+ *   stage: build
+ *   script:
+ *     - cmake --build $CMAKE_BUILD_DIR
+ *   dependencies:
+ *     - configure
+ *   artifacts:
+ *     paths:
+ *       - $CMAKE_BUILD_DIR/
+ *     expire_in: 1 hour
+ * 
+ * test-all:
+ *   stage: test
+ *   script:
+ *     - cmake --build $CMAKE_BUILD_DIR --target test-all
+ *   dependencies:
+ *     - build
+ *   artifacts:
+ *     paths:
+ *       - $CMAKE_BUILD_DIR/coverage/report/
+ *     expire_in: 1 week
+ * 
+ * documentation:
+ *   stage: documentation
+ *   script:
+ *     - cmake --build $CMAKE_BUILD_DIR --target dvi
+ *   dependencies:
+ *     - build
+ *   artifacts:
+ *     paths:
+ *       - $CMAKE_BUILD_DIR/docbuild/
+ *     expire_in: 1 week
+ * @endcode
+ * 
+ * @section build_links Связанные документы
+ * @li @ref page_architecture — общая архитектура библиотеки
+ * @li @ref page_memory_model — модель памяти и управление ресурсами
+ * @li @ref page_exception_safety — гарантии безопасности исключений
+ * @li @ref page_numerical_stability — численная устойчивость и обработка FPU
+ * @li @ref matrix_lib — полная справка по API библиотеки
+ */
